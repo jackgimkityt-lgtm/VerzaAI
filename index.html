@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot</title>
+    <title>VerzaAI Assistant Chat</title>
     <!-- Tailwind CSS CDN for modern and responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for a clean, dark chat interface */
         :root {
-            --primary-color: #3b82f6; /* Blue-500 */
+            --primary-color: #f63b82; /* Pink/Magenta-like color for VerzaAI */
             --bg-dark: #1f2937; /* Gray-800 */
             --bg-medium: #374151; /* Gray-700 */
             --text-light: #f3f4f6;
@@ -96,27 +96,27 @@
 </head>
 <body>
     <header class="h-16 bg-gray-900 flex items-center justify-center px-6 shadow-xl mb-4">
-        <h1 class="text-3xl font-extrabold" style="color: var(--primary-color);">AI Assistant Chat</h1>
+        <h1 class="text-3xl font-extrabold" style="color: var(--primary-color);">VerzaAI Assistant Chat</h1>
     </header>
 
     <div id="chat-container">
         <div id="chat-messages">
-            <!-- Initial welcome message -->
+            <!-- Initial welcome message (VISUAL ONLY) -->
             <div class="chat-message bot-message">
                 <div class="message-bubble">
-                    Hello! I'm your AI assistant. I can help you find information, explain concepts, and answer your questions. What can I help you with today?
+                    Hello! I'm VerzaAI, your personal assistant. I'm here to help you find information, explain concepts, and answer your questions quickly and accurately. What can I help you with today?
                 </div>
             </div>
             <!-- Messages will be appended here -->
         </div>
 
         <div id="chat-input-area" class="flex space-x-3">
-            <textarea id="chat-input" placeholder="Ask me anything..."
-                class="flex-grow p-3 rounded-xl bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 resize-none text-white h-12 overflow-hidden transition-all duration-100 ease-in-out"
+            <textarea id="chat-input" placeholder="Ask VerzaAI anything..."
+                class="flex-grow p-3 rounded-xl bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-pink-500 resize-none text-white h-12 overflow-hidden transition-all duration-100 ease-in-out"
                 onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"
                 rows="1"></textarea>
             <button onclick="sendMessage()" id="send-button"
-                class="w-24 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl transition duration-200 disabled:opacity-50 flex items-center justify-center">
+                class="w-24 bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-xl transition duration-200 disabled:opacity-50 flex items-center justify-center">
                 Send
             </button>
         </div>
@@ -131,8 +131,7 @@
 
         // Chat history to maintain context
         let chatHistory = [];
-        // Add the initial bot greeting to history
-        chatHistory.push({ role: "model", parts: [{ text: "Hello! I'm your AI assistant. I can help you find information, explain concepts, and answer your questions. What can I help you with today?" }] });
+        // The history must start with a 'user' message for the first API call.
 
         /**
          * Dynamically adjusts the height of the textarea based on content.
@@ -146,7 +145,7 @@
         chatInput.addEventListener('input', adjustTextareaHeight);
 
         /**
-         * Appends a message to the chat interface.
+         * Appends a message to the chat interface, including sources if available.
          * @param {string} text - The message content.
          * @param {string} role - 'user' or 'bot'.
          * @param {Array<Object>} sources - Optional array of citation sources.
@@ -162,7 +161,7 @@
             // Convert markdown style links [text](url) to proper HTML links
             let formattedText = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
                 // Safely convert to a hyperlink
-                return `<a href="${url}" target="_blank" class="text-blue-300 hover:text-blue-100 underline">${linkText}</a>`;
+                return `<a href="${url}" target="_blank" class="text-pink-300 hover:text-pink-100 underline">${linkText}</a>`;
             });
             textBubble.innerHTML = formattedText;
 
@@ -172,7 +171,7 @@
                 const sourceList = document.createElement('div');
                 sourceList.classList.add('text-xs', 'mt-1', 'text-gray-400', 'p-2', 'rounded-lg', 'bg-gray-700', 'max-w-md');
                 sourceList.innerHTML = '<strong>Sources:</strong><ul>' + 
-                    sources.map(s => `<li><a href="${s.uri}" target="_blank" class="text-blue-300 hover:text-blue-100 underline">${s.title || s.uri}</a></li>`).join('') +
+                    sources.map(s => `<li><a href="${s.uri}" target="_blank" class="text-pink-300 hover:text-pink-100 underline">${s.title || s.uri}</a></li>`).join('') +
                     '</ul>';
                 messageDiv.appendChild(sourceList);
             }
@@ -190,11 +189,12 @@
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CHAT_MODEL}:generateContent?key=${API_KEY}`;
 
             // System instruction to guide the AI's persona
-            const systemPrompt = "You are a friendly, helpful, and age-appropriate AI assistant. You must always maintain a positive tone and provide safe, clean, and healthy responses suitable for users under 18. Use Google Search grounding to provide accurate, up-to-date information.";
+            const systemPrompt = "You are VerzaAI, a friendly, helpful, and age-appropriate AI assistant. You must always maintain a positive tone and provide safe, clean, and healthy responses suitable for users under 18. Use Google Search grounding to provide accurate, up-to-date information for factual queries.";
 
             const payload = {
                 contents: contents,
-                tools: [{ "google_search": {} }], // Enable Google Search grounding
+                // Re-added Google Search to provide factual answers
+                tools: [{ "google_search": {} }], 
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
 
@@ -220,7 +220,7 @@
                         throw new Error(`API call failed after ${maxRetries} attempts with status: ${response.status}`);
                     }
                 } catch (error) {
-                    console.error("Gemini API Request Error:", error);
+                    console.error("VerzaAI API Request Error:", error);
                     if (i === maxRetries - 1) {
                         return null; // Return null if all retries fail
                     }
@@ -250,7 +250,7 @@
             // 2. Mock loading message (spinner/placeholder text)
             const loadingMessage = document.createElement('div');
             loadingMessage.classList.add('chat-message', 'bot-message');
-            loadingMessage.innerHTML = '<div class="message-bubble bg-gray-600 text-white"><svg class="animate-spin h-5 w-5 mr-3 inline text-blue-300" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Thinking...</div>';
+            loadingMessage.innerHTML = '<div class="message-bubble bg-gray-600 text-white"><svg class="animate-spin h-5 w-5 mr-3 inline text-pink-300" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Thinking...</div>';
             chatMessages.appendChild(loadingMessage);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -262,11 +262,14 @@
             sendButton.disabled = false;
 
             // 5. Process and display AI response
-            if (apiResult && apiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
-                const text = apiResult.candidates[0].content.parts[0].text;
+            const candidate = apiResult?.candidates?.[0];
+            const generatedText = candidate?.content?.parts?.[0]?.text;
+
+            if (generatedText) {
+                const text = generatedText;
                 let sources = [];
                 
-                const groundingMetadata = apiResult.candidates[0].groundingMetadata;
+                const groundingMetadata = candidate?.groundingMetadata;
                 if (groundingMetadata && groundingMetadata.groundingAttributions) {
                     sources = groundingMetadata.groundingAttributions
                         .map(attribution => ({
@@ -283,9 +286,32 @@
                 chatHistory.push({ role: "model", parts: [{ text: text }] });
 
             } else {
-                const errorMessage = "Sorry, I ran into an issue finding that information. Could you try asking in a different way?";
+                // Detailed logging for debugging
+                if (apiResult === null) {
+                    console.error("VerzaAI Error: API call failed after all retries (Likely a network/connectivity issue or throttling).");
+                } else if (apiResult && candidate) {
+                    const finishReason = candidate.finishReason;
+                    const promptFeedback = apiResult.promptFeedback;
+
+                    console.error("VerzaAI Error: API response received, but no text found.");
+                    console.log("Finish Reason:", finishReason);
+                    
+                    if (promptFeedback?.safetyRatings?.length > 0) {
+                        const blockedRating = promptFeedback.safetyRatings.find(r => r.probability !== 'NEGLIGIBLE' && r.blocked === true);
+                        if (blockedRating) {
+                             console.error(`Prompt may have been BLOCKED due to safety settings. Category: ${blockedRating.category}, Probability: ${blockedRating.probability}`);
+                        } else {
+                             console.error("No text generated. Finish Reason is likely STOP or SAFETY, but not explicitly blocked.");
+                        }
+                    }
+                    console.log("Full API Result (for advanced debugging):", apiResult);
+                } else {
+                    console.error("VerzaAI Error: API response was null or malformed.", apiResult);
+                }
+
+                // Friendly, age-appropriate error message for the user
+                const errorMessage = "Oh no! I'm having trouble connecting right now or finding a good answer. Could you please try asking your question a little differently?";
                 appendMessage(errorMessage, 'bot');
-                // Do not add error to history to avoid confusing the model
             }
         }
     </script>
